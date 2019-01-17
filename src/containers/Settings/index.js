@@ -8,7 +8,7 @@ import connect from "react-redux/es/connect/connect"
 
 class Settings extends Component<{}> {
   render() {
-    var userAvatar = `https://feather.nyc3.cdn.digitaloceanspaces.com/${
+    var userAvatar = `https://feather.sfo2.cdn.digitaloceanspaces.com/${
       this.props.user.image
     }`
     return (
@@ -29,7 +29,7 @@ class Settings extends Component<{}> {
         <Card
           containerStyle={{ padding: 0 }}
           image={{
-            uri: `https://feather.nyc3.cdn.digitaloceanspaces.com/${
+            uri: `https://feather.sfo2.cdn.digitaloceanspaces.com/${
               this.props.user.image
             }`
           }}
