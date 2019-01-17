@@ -14,7 +14,13 @@ import { connect } from "react-redux"
 
 import Post from "../../components/Post"
 import PostModal from "@components/Modal"
-import { fetchPosts, createPost, getPost, postVote } from "@redux/modules/post"
+import {
+  fetchPosts,
+  fetchPostsBy,
+  createPost,
+  getPost,
+  postVote
+} from "@redux/modules/post"
 
 const CATEGORIES = {
   Music: {
@@ -88,8 +94,8 @@ class Feed extends Component<{}> {
 
   openModal = () => this.setState({ visible: true })
 
-  submitPost = (content, color, group) => {
-    this.props.createPost(content, color, group)
+  submitPost = (content, color, group, image) => {
+    this.props.createPost(content, color, group, image)
     this.setState({ visible: false })
   }
 
@@ -103,6 +109,7 @@ class Feed extends Component<{}> {
           onSubmit={this.submitPost}
           subscriptions={this.props.subscriptionsPicker}
           navigate={this.props.navigation.navigate}
+          user={this.props.user}
         />
         {this.props.allIds && !this.props.loading ? (
           <FlatList
@@ -135,6 +142,7 @@ class Feed extends Component<{}> {
             justifyContent: "space-evenly",
             padding: 5
           }}
+          onLongPress={() => this.props.navigation.navigate("ImageCapture")}
           onPress={this.openModal}
           hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}
         >
@@ -176,5 +184,5 @@ const mapStateToProps = state => {
 
 export default connect(
   mapStateToProps,
-  { fetchPosts, createPost, getPost, postVote }
+  { fetchPosts, fetchPostsBy, createPost, getPost, postVote }
 )(Feed)
