@@ -25,7 +25,10 @@ class Vote extends Component {
   render() {
     return (
       <View style={{ alignItems: "center" }}>
-        <TouchableOpacity onPress={this.upVote}>
+        <TouchableOpacity
+          onPress={this.upVote}
+          hitSlop={{ top: 6, bottom: 0, left: 15, right: 15 }}
+        >
           <Icon
             type="font-awesome"
             name="chevron-up"
@@ -47,7 +50,10 @@ class Vote extends Component {
         >
           {this.props.votesCount}
         </Text>
-        <TouchableOpacity onPress={this.downVote}>
+        <TouchableOpacity
+          onPress={this.downVote}
+          hitSlop={{ top: 0, bottom: 5, left: 15, right: 15 }}
+        >
           <Icon
             type="font-awesome"
             name="chevron-down"
