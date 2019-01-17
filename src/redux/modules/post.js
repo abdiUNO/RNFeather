@@ -25,6 +25,8 @@ const ADD_COMMENT_FAILURE = "POSTS/ADD_COMMENT_FAILURE"
 const POST_VOTE = "auth/POST_VOTE_SUCCESS"
 const POST_VOTE_FAILURE = "auth/POST_VOTE_FAILURE"
 
+const FETCH_GROUP_POSTS = "POSTS/FETCH_GROUP_POSTS"
+
 function getRandomColor() {
   const color = [
     "#3498db",
@@ -77,18 +79,37 @@ const postReducer = (state = [], action) => {
 }
 
 // Reducer
-export default function reducer(state = { loading: false }, action = {}) {
+export default function reducer(
+  state = {
+    loading: false,
+    group: {
+      byId: null,
+      allIds: null
+    }
+  },
+  action = {}
+) {
   switch (action.type) {
     case API_REQUEST:
       return {
         ...state,
-        loading: true
+        loading: true,
+        group: {}
       }
     case GET_POST_REQUEST:
       return {
         ...state,
         item: null,
         loading: true
+      }
+    case FETCH_GROUP_POSTS:
+      return {
+        ...state,
+        loading: false,
+        group: {
+          byId: action.payload.entities.posts,
+          allIds: action.payload.result
+        }
       }
     case FETCH_POSTS:
       return {
@@ -161,8 +182,46 @@ export const fetchPosts = () => (dispatch, getState) => {
   })
 }
 
-export const createPost = (text, color, category) => (dispatch, getState) => {
+export const fetchPostsBy = categoryId => (dispatch, getState) => {
   const user = getState().auth.user
+  dispatch({
+    [RSAA]: {
+      endpoint: `${url}/post/category/${categoryId}`,
+      method: "GET",
+      types: [
+        API_REQUEST,
+        {
+          type: FETCH_GROUP_POSTS,
+          payload: async (action, state, res) => {
+            const posts = await res.json()
+            console.log("POSTS", posts)
+            return normalize(posts, postListSchema)
+          },
+          meta: {
+            routeName: "GroupFeed",
+            params: {}
+          }
+        },
+        {
+          type: REQUEST_FAILURE,
+          payload: async (action, state, res) => {
+            res.json().then(response => log("FAIL", response))
+          }
+        }
+      ],
+      headers: {
+        Authorization: `Bearer ${user.token.accessToken}`
+      }
+    }
+  })
+}
+
+export const createPost = (text, color, category, image) => (
+  dispatch,
+  getState
+) => {
+  const user = getState().auth.user
+  console.log(image)
 
   dispatch({
     [RSAA]: {
@@ -180,7 +239,7 @@ export const createPost = (text, color, category) => (dispatch, getState) => {
         {
           type: REQUEST_FAILURE,
           payload: async (action, state, res) => {
-            res.json().then(response => log("FAIL", response))
+            res.json().then(response => console.log("FAIL", response))
           }
         }
       ],
@@ -192,7 +251,8 @@ export const createPost = (text, color, category) => (dispatch, getState) => {
       body: JSON.stringify({
         text,
         category,
-        color
+        color,
+        image
       })
     }
   })

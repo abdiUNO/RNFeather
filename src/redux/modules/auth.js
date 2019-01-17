@@ -2,6 +2,8 @@ import { RSAA } from "redux-api-middleware"
 import { log, url } from "@src/utils"
 import { fetchPosts } from "./post"
 
+import { Alert } from "react-native"
+
 console.log(url)
 // Actions
 const API_REQUEST = "auth/API_REQUEST"
@@ -18,7 +20,17 @@ export default function reducer(state = {}, action = {}) {
     case API_REQUEST:
       return {
         ...state,
-        loading: true
+        loading: true,
+        errors: null
+      }
+    case REQUEST_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        errors: {
+          ...action.payload.errors,
+          message: action.payload.message
+        }
       }
     case SIGN_UP:
       return {
@@ -87,7 +99,14 @@ export const login = (email, password) => {
             params: {}
           }
         },
-        REQUEST_FAILURE
+        {
+          type: REQUEST_FAILURE,
+          payload: async (action, state, res) => {
+            const errors = await res.json()
+            Alert.alert(errors.message)
+            return errors
+          }
+        }
       ],
       headers: {
         Accept: "application/json",
@@ -110,6 +129,13 @@ export const signup = (username, email, password) => {
         API_REQUEST,
         {
           type: SIGN_UP,
+          payload: async (action, state, res) => {
+            const pay = await res.json()
+
+            log("GROUPS", pay)
+
+            return pay
+          },
           meta: {
             routeName: "ImageUpload",
             params: {}
@@ -217,7 +243,7 @@ export const uploadImage = formData => (dispatch, getState) => {
       ],
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${user.token.accessToken}`
       },
       body: formData
