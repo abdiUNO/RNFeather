@@ -1,9 +1,37 @@
 import React, { Component } from "react"
-import { Text, TouchableOpacity } from "react-native"
-import { GiftedChat } from "react-native-gifted-chat"
+import { Text, TouchableOpacity, View } from "react-native"
+import { GiftedChat, Bubble } from "react-native-gifted-chat"
 import { fetchGroups } from "@redux/modules/group"
 import { Icon } from "react-native-elements"
 import Fire from "@services/Fire"
+import GroupsList from "./List"
+
+const QUIZ_STARTED = 0
+const START_QUIZ = 1
+const NO_QUIZ = 2
+
+function parseHtmlEntities(text) {
+  var entities = [
+    ["amp", "&"],
+    ["apos", "'"],
+    ["#x27", "'"],
+    ["#x2F", "/"],
+    ["#39", "'"],
+    ["#47", "/"],
+    ["lt", "<"],
+    ["gt", ">"],
+    ["nbsp", " "],
+    ["quot", '"']
+  ]
+
+  for (var i = 0, max = entities.length; i < max; ++i)
+    text = text.replace(
+      new RegExp("&" + entities[i][0] + ";", "g"),
+      entities[i][1]
+    )
+
+  return text
+}
 
 class Chat extends Component<{}> {
   static navigationOptions = ({ navigation, navigationOptions }) => {
@@ -18,6 +46,7 @@ class Chat extends Component<{}> {
           style={{
             marginRight: 15
           }}
+          hitSlop={{ top: 10, bottom: 10, left: 20, right: 15 }}
         >
           <Icon name="info" type="feather" color="#fff" />
         </TouchableOpacity>
@@ -31,7 +60,11 @@ class Chat extends Component<{}> {
     this._isMounted = true
 
     this.state = {
-      messages: []
+      messages: [],
+      quizStatus: NO_QUIZ,
+      questions: null,
+      index: 0,
+      correct: 0
     }
   }
 
@@ -39,9 +72,11 @@ class Chat extends Component<{}> {
     const { params } = this.props.navigation.state
 
     return {
-      _id: 2,
-      name: "Nickolas Connelly",
-      avatar: "https://placeimg.com/140/140/any",
+      _id: params.user.id,
+      name: params.user.username,
+      avatar: `https://feather.sfo2.cdn.digitaloceanspaces.com/${
+        params.user.image
+      }`,
       groupId: params.group.id
     }
   }
@@ -57,12 +92,203 @@ class Chat extends Component<{}> {
     Fire.shared.on(groupId, this.addMessage)
   }
 
+  onPressHashtag = message => {
+    const reg = /^(#(yes +))|(#(yes))$/
+    if (reg.test(message) === true && this.state.quiz === START_QUIZ) {
+      this.setState({ quiz: QUIZ_STARTED })
+      fetch("https://opentdb.com/api.php?amount=4&category=11&difficulty=easy")
+        .then(response => response.json())
+        .then(responseJson => {
+          console.log(responseJson)
+          this.setState({
+            questions: responseJson.results,
+            index: 0,
+            correct: 0
+          })
+          this.addMessage({
+            _id: Math.round(Math.random() * 1000000),
+            text: "Starting quiz 👍",
+            user: {
+              _id: "@feather",
+              name: "@bot"
+            },
+            system: true,
+            createdAt: new Date(Date.now())
+          })
+          this.showQuestion(responseJson.results[0])
+        })
+        .catch(error => {
+          console.error(error)
+        })
+    } else if (this.state.quiz === QUIZ_STARTED) {
+      this.addMessage({
+        _id: Math.round(Math.random() * 1000000),
+        text: `Question`,
+        user: {
+          _id: "@feather",
+          name: "@bot"
+        },
+        system: true,
+        createdAt: new Date(Date.now())
+      })
+      var correct = `#${this.state.questions[this.state.index].correct_answer}`
+      if (correct == message) {
+        this.setState({ correct: this.state.correct + 1 })
+        this.addMessage({
+          _id: Math.round(Math.random() * 1000000),
+          text: "Correct",
+          user: {
+            _id: "@feather",
+            name: "@bot"
+          },
+          createdAt: new Date(Date.now())
+        })
+      }
+      var newIndex = this.state.index + 1
+      this.setState({ index: newIndex })
+      if (newIndex < this.state.questions.length - 1) {
+        this.showQuestion(this.state.questions[newIndex])
+      } else {
+        this.addMessage({
+          _id: Math.round(Math.random() * 1000000),
+          text: `DONE`,
+          user: {
+            _id: "@feather",
+            name: "@bot"
+          },
+          createdAt: new Date(Date.now())
+        })
+        this.setState({
+          quiz: NO_QUIZ
+        })
+      }
+    }
+  }
+
+  showQuestion = data => {
+    var bot = {
+      _id: "@feather",
+      name: "@bot"
+    }
+
+    this.addMessage({
+      _id: Math.round(Math.random() * 1000000),
+      text: parseHtmlEntities(data.question),
+      user: bot,
+      createdAt: Date.now()
+    })
+    this.addMessage({
+      _id: Math.round(Math.random() * 1000000),
+      text: `#${parseHtmlEntities(data.correct_answer)}`,
+      user: bot,
+      createdAt: Date.now()
+    })
+
+    for (var i = 0; i < data.incorrect_answers.length; i++) {
+      var qs = `#${parseHtmlEntities(data.incorrect_answers[i])}`
+      this.addMessage({
+        _id: Math.round(Math.random() * 1000000),
+        text: qs,
+        user: bot,
+        createdAt: Date.now()
+      })
+    }
+  }
+
+  isSameUser = (currentMessage, previousMessage) => {
+    if (previousMessage.user !== undefined) {
+      return currentMessage.user._id === previousMessage.user._id
+    } else {
+      return false
+    }
+  }
+
+  renderBubble = props => {
+    const { params } = this.props.navigation.state
+
+    if (
+      this.isSameUser(props.currentMessage, props.previousMessage) ||
+      params.user.id === props.currentMessage.user._id
+    ) {
+      props.currentMessage.user.avatar =
+        "https://feather.sfo2.cdn.digitaloceanspaces.com/"
+      return <Bubble {...props} />
+    }
+
+    return (
+      <View>
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: "bold",
+            color: "#5a6263",
+            padding: 5,
+            paddingBottom: 10
+          }}
+        >
+          {props.currentMessage.user.name}
+        </Text>
+        <Bubble {...props} />
+      </View>
+    )
+  }
+
   render() {
     return (
       <GiftedChat
         messages={this.state.messages}
-        onSend={Fire.shared.send}
+        onSend={messages => {
+          const msg = messages[0]
+          const quizCheck = /^(@(quiz +))|(@(quiz))$/
+          Fire.shared.send(messages)
+
+          if (quizCheck.test(msg.text) === true && this._isMounted) {
+            this.setState({ quiz: START_QUIZ })
+            var bot = {
+              _id: "@feather",
+              name: "@bot"
+            }
+            this.setState(prev => ({
+              messages: GiftedChat.append(prev.messages, [
+                {
+                  _id: Math.round(Math.random() * 1000000),
+                  text: "#no",
+                  user: bot,
+                  createdAt: Date.now()
+                },
+                {
+                  _id: Math.round(Math.random() * 1000000),
+                  text: "#yes",
+                  user: bot,
+                  createdAt: Date.now()
+                },
+                {
+                  _id: Math.round(Math.random() * 1000000),
+                  text: "Wanna play a game?",
+                  user: bot,
+                  createdAt: Date.now()
+                }
+              ])
+            }))
+          }
+        }}
         user={this.user}
+        renderBubble={this.renderBubble}
+        parsePatterns={linkStyle => [
+          {
+            pattern: /^(@(quiz +))|(@(quiz))$/,
+            style: {
+              ...linkStyle,
+              fontSize: 14,
+              color: "#aaa"
+            }
+          },
+          {
+            pattern: /#(\w+)/,
+            style: { ...linkStyle, color: "#3498db" },
+            onPress: this.onPressHashtag
+          }
+        ]}
       />
     )
   }

@@ -40,7 +40,12 @@ class Groups extends Component<{}> {
           <GroupsList
             style={styles.container}
             groups={this.props.groups}
-            onPress={group => this.props.navigation.navigate("Chat", { group })}
+            onPress={group =>
+              this.props.navigation.navigate("Chat", {
+                group,
+                user: this.props.user
+              })
+            }
           />
         ) : (
           <View />
