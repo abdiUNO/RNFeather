@@ -21,6 +21,7 @@ import { Icon } from "react-native-elements"
 import GroupList from "@containers/Feed/GroupList"
 import SignUp from "@containers/Auth/SignUp"
 import ImageUpload from "@containers/Auth/ImageUpload"
+import GroupFeed from "@containers/Feed/GroupFeed"
 
 const TabNavigator = createBottomTabNavigator(
   {
@@ -59,9 +60,10 @@ TabNavigator.navigationOptions = ({ navigation }) => {
             const { params } = navigation.state.routes[0]
             if (params) params.joinGroup()
           }}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 5 }}
         >
           <Text style={{ fontWeight: "bold", marginRight: 12, color: "#fff" }}>
-            + Join Group
+            + Join Clique
           </Text>
         </TouchableOpacity>
       )
@@ -74,17 +76,11 @@ TabNavigator.navigationOptions = ({ navigation }) => {
           onPress={() => {
             navigation.navigate("GroupList")
           }}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 5 }}
         >
-          <Icon
-            iconStyle={{
-              marginRight: 25,
-              color: "#fff"
-            }}
-            size={30}
-            color="#fff"
-            name="ellipsis-h"
-            type="font-awesome"
-          />
+          <Text style={{ fontWeight: "bold", marginRight: 12, color: "#fff" }}>
+            Join Group
+          </Text>
         </TouchableOpacity>
       )
     }
@@ -130,7 +126,8 @@ const App = createStackNavigator(
     Chat,
     Detail,
     GroupList,
-    GroupSettings
+    GroupSettings,
+    GroupFeed
   },
   options
 )
