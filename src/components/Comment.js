@@ -79,7 +79,9 @@ export default class Comment extends Component {
 
   render() {
     const data = this.props.data
-    const avatar = { uri: "https://picsum.photos/200/?random" }
+    const avatar = {
+      uri: `https://feather.sfo2.cdn.digitaloceanspaces.com/${data.user.image}`
+    }
     return (
       <BaseCard noPadding={true} noRadius={true} color={this.props.color}>
         <View

@@ -17,11 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.0</string>
+	<string>2.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.5</string>
+	<string>1.7</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -30,7 +30,7 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>http://138.197.231.228</key>
+			<key>167.99.170.233</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
@@ -42,12 +42,21 @@
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 			</dict>
+			<key>selfish-treefrog-92.localtunnel.me</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>$(PRODUCT_NAME) would like to use your camera</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>$(PRODUCT_NAME) would like to use your camera roll</string>
 	<key>NSMainNibFile</key>
 	<string>LaunchScreen</string>
 	<key>NSMainNibFile~ipad</key>

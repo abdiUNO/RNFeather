@@ -80,7 +80,6 @@ const GroupsList = props => (
         avatar={getImage(1)}
         key={index}
         title={`Group #${index + 1}`}
-        subtitle={"In nam molestias corporis"}
       />
     ))}
   </List>

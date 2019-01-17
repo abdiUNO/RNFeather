@@ -1,9 +1,9 @@
 import React, { Component } from "react"
-import { ScrollView, Text } from "react-native"
+import { ScrollView, Text, TouchableOpacity } from "react-native"
 import { List, ListItem, Button } from "react-native-elements"
 import connect from "react-redux/es/connect/connect"
 import { subscribeToGroup, unsubscribeToGroup } from "@redux/modules/auth"
-import { fetchPosts } from "@redux/modules/post"
+import { fetchPosts, fetchPostsBy } from "@redux/modules/post"
 
 class GroupList extends Component {
   static navigationOptions = ({ navigation, navigationOptions }) => {
@@ -96,6 +96,10 @@ class GroupList extends Component {
     })
   }
 
+  goToGroup = category => {
+    this.props.fetchPostsBy(category)
+  }
+
   renderGroup = (item, index) => {
     const joinedGroup = this.props.user.subscription.indexOf(item.title) > -1
     return (
@@ -132,5 +136,5 @@ const mapStateToProps = state => {
 
 export default connect(
   mapStateToProps,
-  { subscribeToGroup, unsubscribeToGroup, fetchPosts }
+  { subscribeToGroup, unsubscribeToGroup, fetchPosts, fetchPostsBy }
 )(GroupList)

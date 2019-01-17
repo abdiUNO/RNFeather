@@ -3,93 +3,16 @@ import React, { Component } from "react"
 import {
   FlatList,
   Text,
-  TouchableOpacity,
   View,
   ScrollView,
-  TextInput,
   ActivityIndicator,
   StyleSheet
 } from "react-native"
-import { Icon } from "react-native-elements"
-import KeyboardSpacer from "react-native-keyboard-spacer"
 import { connect } from "react-redux"
 import { addComment, postVote } from "@redux/modules/post"
 import DismissKeyboard from "dismissKeyboard"
 import Comment from "../../components/Comment"
-
-class InputForm extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {}
-
-    this.onChanged = this.onChanged.bind(this)
-    this.onAdd = this.onAdd.bind(this)
-  }
-
-  onChanged(comment) {
-    this.setState({ comment })
-  }
-
-  onAdd() {
-    DismissKeyboard()
-
-    this.props.addComment(this.state.comment)
-    this.setState({ comment: "" })
-  }
-
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          backgroundColor: "#fff",
-          left: 0,
-          position: "absolute",
-          bottom: 1
-        }}
-      >
-        <View style={{ flex: 4 }}>
-          <TextInput
-            style={{
-              width: "100%",
-              backgroundColor: "white",
-              borderRadius: 5,
-              marginLeft: 15,
-              marginTop: 7,
-              marginRight: 25,
-              height: 40
-            }}
-            maxLength={160}
-            autoFocus={true}
-            placeholder="Add a comment"
-            onSubmitEditing={this.onAdd}
-            onChangeText={this.onChanged}
-          >
-            {this.state.comment}
-          </TextInput>
-        </View>
-        <View style={{ flex: 1 }}>
-          <TouchableOpacity
-            transparent
-            hitSlop={{ top: 10, bottom: 10, left: 15, right: 15 }}
-            vertical
-            onPress={this.onAdd}
-          >
-            <Icon
-              type="font-awesome"
-              name="paper-plane"
-              iconStyle={{
-                color: "#4589F3",
-                marginTop: 10
-              }}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
-  }
-}
+import InputForm from "../../components/InputForm"
 
 class Detail extends Component {
   static navigationOptions = ({ navigation, navigationOptions }) => {
@@ -119,6 +42,10 @@ class Detail extends Component {
 
   _renderComments = data => {
     const comment = this.props.post.comments.byId[data.item]
+
+    if (this.props.post.category === "Anonymous") {
+      comment.user.username = "---------"
+    }
 
     return (
       <View>
