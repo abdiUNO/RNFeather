@@ -5,7 +5,8 @@ import {
   StyleSheet,
   Image,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  Platform
 } from "react-native"
 import { Button, Icon } from "react-native-elements"
 import ImageResizer from "react-native-image-resizer"
@@ -48,13 +49,17 @@ class ImageUpload extends Component {
       }
     }
 
-    this.setState({ pickingImage: true, uploadingImage: true })
+    if (Platform.OS === "ios")
+      this.setState({ pickingImage: true, uploadingImage: true })
 
     ImagePicker.showImagePicker(options, response => {
       this.setState({ pickingImage: false })
       if (response.didCancel) {
         this.setState({ uploadingImage: false })
       } else {
+        if (Platform.OS === "android")
+          this.setState({ pickingImage: false, uploadingImage: true })
+
         ImageResizer.createResizedImage(response.uri, 500, 500, "JPEG", 80)
           .then(this.uploadImage)
           .catch(error => {})
