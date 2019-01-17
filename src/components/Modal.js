@@ -6,42 +6,42 @@ import {
   Text,
   TextInput,
   Picker,
-  TouchableOpacity
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+  Image,
+  Alert
 } from "react-native"
 import { Card, Button, Icon, Header } from "react-native-elements"
 import RNPickerSelect from "react-native-picker-select"
+import KeyboardSpacer from "react-native-keyboard-spacer"
+import ImageResizer from "react-native-image-resizer"
+import ImagePicker from "react-native-image-picker"
 
 import styled from "styled-components"
+import Spinner from "react-native-loading-spinner-overlay"
 
-const StyledText = styled(Text)`
-  font-size: 20;
-  color: black;
-  margin-left: 45px;
-  margin-right: 45px;
-  margin-top: 3px;
-  margin-bottom: 3px;
-`
+const NONE = 0
+const PICKING = 1
+const UPLOADING = 2
 
-const StyledCard = styled(Card)`
-  border-radius: 5;
-`
-
-const StyledCardItem = styled(Card)`
-  border-radius: 5;
-`
 const StyledTextarea = styled(TextInput)`
-  height: 200;
-  width: 100%;
-  font-size: 20;
+  font-size: 20px;
   background-color: #fff;
-  border-radius: 10;
-  padding-top: 15px;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding: 15px 15px;
+  margin-bottom: 35px;
+  border-top-width: 2px;
+  border-top-color: rgba(112, 113, 114, 0.25);
+  font-size: 18px;
 `
-const StyledPicker = styled(Picker)`
-  height: 50;
-  width: 100%;
+
+const CameraButton = styled(TouchableOpacity)`
+  justify-content: center;
+  align-self: center;
+  padding: 10px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 35px;
+  background-color: rgba(0, 0, 0, 0.1);
 `
 
 function getRandomColor() {
@@ -67,26 +67,101 @@ class PostModal extends Component {
     this.state = {
       group: "",
       modalVisible: false,
-      content: ""
+      content: "",
+      imageState: NONE,
+      image: null
     }
+
+    this.selectImage = this.selectImage.bind(this)
+    this.uploadImage = this.uploadImage.bind(this)
   }
 
-  componentDidMount() {
-    console.log("HELLO WORLD")
-  }
+  componentDidMount() {}
 
   setModalVisible(visible) {
     this.setState({ modalVisible: visible })
   }
 
+  selectImage() {
+    let customButtons = []
+    if (this.state.image) {
+      customButtons = [{ name: "remove", title: "Remove Image" }]
+    }
+
+    var options = {
+      title: "Select Image",
+      customButtons: customButtons,
+      storageOptions: {
+        skipBackup: true,
+        path: "images"
+      }
+    }
+
+    this.setState({ imageState: PICKING }, () => {
+      ImagePicker.showImagePicker(options, response => {
+        if (response.didCancel) {
+          this.setState({ imageState: NONE })
+        } else if (response.customButton === "remove") {
+          this.setState({ image: null }, () => {
+            this.setState({ imageState: NONE })
+          })
+        } else {
+          this.setState({ imageState: UPLOADING })
+          ImageResizer.createResizedImage(response.uri, 500, 500, "JPEG", 80)
+            .then(this.uploadImage)
+            .catch(error => {})
+        }
+      })
+    })
+  }
+
+  uploadImage = response => {
+    const data = new FormData()
+
+    data.append("file", {
+      uri: response.uri,
+      name: response.name,
+      type: "image/jpeg"
+    })
+
+    this.setState({ image: response.uri, imageState: NONE, formData: data })
+
+    //this.props.uploadImage(data)
+  }
+
   submit = () => {
     const color = getRandomColor()
-    this.props.onSubmit(this.state.content, color, this.state.group)
+    const group = this.state.group
+    const content = this.state.content
+
+    console.log(this.state.formData)
+    if (this.state.formData) {
+      this.setState({ imageState: UPLOADING })
+      fetch("http://localhost:3000/user/image", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${this.props.user.token.accessToken}`
+        },
+        body: this.state.formData
+      })
+        .then(response => response.json())
+        .then(responseJson => {
+          console.log(group)
+          this.setState({ imageState: NONE })
+          this.props.onSubmit(content, color, group, responseJson.image)
+        })
+    } else {
+      this.props.onSubmit(this.state.content, color, this.state.group, null)
+    }
     this.state.group = ""
   }
 
   render() {
     let backcolor = "#FF8900"
+    const uploadingImage = this.state.uploadingImage
+    const pickingImage = this.state.pickingImage
 
     return (
       <Modal
@@ -102,90 +177,136 @@ class PostModal extends Component {
         transparent={false}
         onRequestClose={this.props.closePost}
       >
+        <Spinner
+          style={{ flex: 1 }}
+          visible={!(this.state.imageState === NONE)}
+          textContent={
+            this.state.imageState === PICKING
+              ? "Select Image..."
+              : "Uploading Image..."
+          }
+          textStyle={{
+            color: "#FFF"
+          }}
+        />
+
         <Header
-          backgroundColor="#9e9e9e"
-          rightComponent={
+          outerContainerStyles={{
+            padding: 0,
+            paddingBottom: 7,
+            paddingHorizontal: 15
+          }}
+          backgroundColor="#FF8900"
+          leftComponent={
             <TouchableOpacity onPress={() => this.props.closePost()}>
-              <Text
-                style={{
+              <Icon
+                iconStyle={{
+                  color: "white",
+                  fontSize: 30,
                   fontWeight: "bold",
-                  color: "#fff",
-                  fontSize: 15
+                  opacity: 1
                 }}
-              >
-                Cancel
-              </Text>
+                type="material"
+                color="#fff"
+                name="arrow-back"
+              />
             </TouchableOpacity>
           }
-          leftComponent={
+          rightComponent={
             <TouchableOpacity onPress={this.submit}>
               <Text
                 style={{
                   fontWeight: "bold",
                   color: "#fff",
-                  fontSize: 15
+                  fontSize: 18,
+                  paddingBottom: 5
                 }}
               >
-                + Post
+                Post
               </Text>
             </TouchableOpacity>
           }
         />
+        <RNPickerSelect
+          placeholder={{
+            label: "Select a Group...",
+            value: null
+          }}
+          placeholderTextColor="rgba(0, 0, 0,0.5)"
+          items={this.props.subscriptions}
+          onValueChange={value => {
+            this.setState({
+              group: value
+            })
+          }}
+          onUpArrow={() => {
+            this.inputRefs.name.focus()
+          }}
+          onDownArrow={() => {
+            this.inputRefs.picker2.togglePicker()
+          }}
+          style={{ ...pickerSelectStyles }}
+          value={this.state.group}
+          ref={el => {
+            this.inputRefs.picker = el
+          }}
+          useNativeAndroidPickerStyle={false}
+        />
         <View
           style={{
             flex: 1,
-            backgroundColor: backcolor
+            backgroundColor: "#fff",
+            paddingBottom: 35
           }}
         >
           <View contentContainerStyle={styles.modalContent}>
-            <View style={styles.innerModal}>
-              <StyledTextarea
-                numberOfLines={4}
-                multiline={true}
-                maxLength={160}
-                autoFocus={true}
-                placeholder="Create a new post"
-                onChangeText={content => this.setState({ content })}
-              />
-            </View>
-            <View
-              style={{
-                paddingVertical: 25,
-                justifyContent: "center",
-                paddingHorizontal: 20
-              }}
-            >
-              <RNPickerSelect
-                placeholder={{
-                  label: "Select a Group...",
-                  value: null
-                }}
-                items={this.props.subscriptions}
-                onValueChange={value => {
-                  this.setState({
-                    group: value
-                  })
-                }}
-                onUpArrow={() => {
-                  this.inputRefs.name.focus()
-                }}
-                onDownArrow={() => {
-                  this.inputRefs.picker2.togglePicker()
-                }}
-                style={{ ...pickerSelectStyles }}
-                value={this.state.group}
-                ref={el => {
-                  this.inputRefs.picker = el
-                }}
-              />
-            </View>
-            {/*<View*/}
-            {/*style={{*/}
-            {/*marginTop: 30*/}
-            {/*}}*/}
-            {/*>*/}
-            {/*<Button title="ADD POST" onPress={this.submit} />*/}
-            {/*</View>*/}
+            <StyledTextarea
+              numberOfLines={4}
+              multiline={true}
+              maxLength={160}
+              autoFocus={true}
+              placeholder="Create a new post"
+              placeholderTextColor="rgba(0, 0, 0,0.5)"
+              onChangeText={content => this.setState({ content })}
+            />
+          </View>
+          <View
+            style={{
+              flex: 0,
+              flexDirection: "row",
+              justifyContent: "center",
+              alignSelf: "center",
+              bottom: 5,
+              right: 10,
+              position: "absolute"
+            }}
+          >
+            {this.state.image === null ? (
+              <CameraButton onPress={this.selectImage}>
+                <Icon
+                  iconStyle={{
+                    color: "rgba(0, 0, 0, 0.75)",
+                    fontSize: 25,
+                    fontWeight: "bold",
+                    opacity: 1
+                  }}
+                  type="material"
+                  color="#fff"
+                  name="photo-camera"
+                />
+              </CameraButton>
+            ) : (
+              <TouchableOpacity onPress={this.selectImage}>
+                <Image
+                  style={{ flex: 1, height: 100, width: 100 }}
+                  resizeMode="contain"
+                  source={{
+                    uri: this.state.image,
+                    isStatic: true
+                  }}
+                />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </Modal>
@@ -195,23 +316,20 @@ class PostModal extends Component {
 
 const styles = StyleSheet.create({
   modal: {
-    top: 20,
-    flex: 1,
-    margin: 10,
+    margin: 8,
     backgroundColor: "#FF8900",
     padding: 25
   },
   modalContent: {
-    borderRadius: 10,
     backgroundColor: "#FF8900",
     padding: 7,
-    paddingBottom: 2
+    paddingBottom: 2,
+    borderColor: "black",
+    borderWidth: 1,
+    borderStyle: "solid"
   },
   innerModal: {
-    backgroundColor: "#FF8900",
-    padding: 15,
-    paddingTop: 25,
-    opacity: 1
+    backgroundColor: "#fff"
   }
 })
 
@@ -219,11 +337,19 @@ const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     fontSize: 16,
     paddingTop: 13,
+    paddingHorizontal: 15,
+    paddingBottom: 12,
+    borderWidth: 1,
+    borderColor: "white",
+    backgroundColor: "white",
+    color: "black"
+  },
+  inputAndroid: {
+    paddingTop: 13,
     paddingHorizontal: 10,
     paddingBottom: 12,
     borderWidth: 1,
-    borderColor: "gray",
-    borderRadius: 4,
+    borderColor: "white",
     backgroundColor: "white",
     color: "black"
   }
