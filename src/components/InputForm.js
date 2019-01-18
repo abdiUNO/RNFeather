@@ -3,6 +3,7 @@ import { Platform, TextInput, TouchableOpacity, View } from "react-native"
 import KeyboardSpacer from "react-native-keyboard-spacer"
 import { Icon } from "react-native-elements"
 import React from "react"
+import DismissKeyboard from "dismissKeyboard"
 
 class InputForm extends Component {
   constructor(props) {

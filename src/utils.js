@@ -20,7 +20,7 @@ export const toQueryString = params => {
   return query
 }
 
-export const url = "http://localhost:3000"
+export const url = "http://[2604:a880:800:a1::d66:5001]"
 
 const colors = {
   object: "#2ecc71",

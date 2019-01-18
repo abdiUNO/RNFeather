@@ -131,7 +131,7 @@ class Feed extends Component<{}> {
             marginBottom: 25,
             position: "absolute",
             bottom: 30,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            backgroundColor: "rgba(0, 0, 0, 0.75)",
             borderColor: "#fff",
             borderStyle: "solid",
             borderWidth: 5,

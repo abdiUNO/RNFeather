@@ -137,7 +137,7 @@ class PostModal extends Component {
     console.log(this.state.formData)
     if (this.state.formData) {
       this.setState({ imageState: UPLOADING })
-      fetch("http://localhost:3000/user/image", {
+      fetch("http://[2604:a880:800:a1::d66:5001]/user/image", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -149,7 +149,7 @@ class PostModal extends Component {
         .then(response => response.json())
         .then(responseJson => {
           console.log(group)
-          this.setState({ imageState: NONE })
+          this.setState({ imageState: NONE, formData: null, image: null })
           this.props.onSubmit(content, color, group, responseJson.image)
         })
     } else {
@@ -309,6 +309,7 @@ class PostModal extends Component {
             )}
           </View>
         </View>
+        <KeyboardSpacer />
       </Modal>
     )
   }

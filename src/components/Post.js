@@ -115,7 +115,7 @@ export default class Post extends Component {
         >
           <Image
             style={{
-              height: 150
+              height: 100
             }}
             resizeMode="cover"
             source={{
@@ -171,9 +171,11 @@ export default class Post extends Component {
             />
           }
         />
-        <Text style={{ fontSize: 15, color: "#fff" }}>{data.text}</Text>
+        <View style={{ paddingHorizontal: 5, paddingVertical: 15 }}>
+          <Text style={{ fontSize: 15, color: "#fff" }}>{data.text}</Text>
+        </View>
 
-        {data.links.length > 0 ? (
+        {(data.links != null) & (data.links.length > 0) ? (
           <Tile
             onPress={() => Linking.openURL(data.links[0].url)}
             imageSrc={{
