@@ -4,6 +4,49 @@ import { TouchableOpacity, View } from "react-native"
 import Vote from "@common/Vote"
 import BaseCard from "@common/BaseCard"
 
+const seedrandom = require("seedrandom")
+
+function animalAvatar(userId, postId) {
+  seedrandom(`${postId}&${userId}`, { global: true })
+
+  const randomNum = (_min, _max) => {
+    const min = Math.ceil(_min)
+    const max = Math.floor(_max)
+
+    return Math.floor(Math.random() * (max - min)) + min
+  }
+
+  const animals = [
+    "cat",
+    "dragon",
+    "crow",
+    "paw",
+    "dog",
+    "dove",
+    "feather",
+    "hippo",
+    "horse",
+    "otter",
+    "spider"
+  ]
+  const backgrounds = [
+    "black",
+    "orange",
+    "green",
+    "purple",
+    "blue",
+    "red",
+    "turq",
+    "dark",
+    "yellow"
+  ]
+
+  const animal = animals[randomNum(0, animals.length)]
+  const background = backgrounds[randomNum(0, backgrounds.length)]
+
+  return `https://feather.sfo2.digitaloceanspaces.com/avatars/${animal}/${background}.png`
+}
+
 const CATEGORIES = {
   Music: {
     name: "headphones",
@@ -82,6 +125,7 @@ export default class Comment extends Component {
     const avatar = {
       uri: `https://feather.sfo2.cdn.digitaloceanspaces.com/${data.user.image}`
     }
+
     return (
       <BaseCard noPadding={true} noRadius={true} color={this.props.color}>
         <View
@@ -105,7 +149,11 @@ export default class Comment extends Component {
               titleStyle={{ marginLeft: 25, color: "#fff" }}
               subtitleStyle={{ marginLeft: 25, color: "#fff" }}
               roundAvatar
-              avatar={avatar}
+              avatar={
+                this.props.category === "Anonymous"
+                  ? animalAvatar(data.user.id, data.postId)
+                  : avatar
+              }
               avatarStyle={{
                 width: this.props.comment ? 35 : 45,
                 height: this.props.comment ? 35 : 45,

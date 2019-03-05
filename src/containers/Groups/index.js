@@ -6,6 +6,11 @@ import { connect } from "react-redux"
 import GroupsList from "./List"
 import { fetchGroups, joinGroup } from "@redux/modules/group"
 import Spinner from "react-native-loading-spinner-overlay"
+import {
+  clearNotifications,
+  addNotification,
+  postReply
+} from "@redux/modules/notifications"
 
 class Groups extends Component<{}> {
   constructor(props) {
@@ -13,8 +18,11 @@ class Groups extends Component<{}> {
     this.state = {
       spinner: false
     }
-
     this.props.fetchGroups()
+    // this.props.postReply("fb1d23e9-e28d-452b-81e7-9f830fab1b9b", {
+    //   text: "similique qui amet molestias voluptatibus id mollitia",
+    //   username: "John"
+    // })
   }
 
   componentDidMount() {
@@ -23,6 +31,20 @@ class Groups extends Component<{}> {
         if (this.props.groups.length < 3) this.props.joinGroup()
         else Alert.alert("Can't join more than three groups")
       }
+    })
+  }
+
+  onPress = group => {
+    if (
+      this.props.notifications[group.id] &&
+      this.props.notifications[group.id].unread_messages > 0
+    ) {
+      this.props.clearNotifications(group.id)
+    }
+
+    this.props.navigation.navigate("Chat", {
+      group,
+      user: this.props.user
     })
   }
 
@@ -36,19 +58,13 @@ class Groups extends Component<{}> {
             color: "#FFF"
           }}
         />
-        {this.props.user ? (
+        {this.props.user && (
           <GroupsList
             style={styles.container}
             groups={this.props.groups}
-            onPress={group =>
-              this.props.navigation.navigate("Chat", {
-                group,
-                user: this.props.user
-              })
-            }
+            notifications={this.props.notifications || {}}
+            onPress={this.onPress}
           />
-        ) : (
-          <View />
         )}
       </View>
     )
@@ -68,11 +84,12 @@ const mapStateToProps = state => {
     user: state.auth.user,
     groups: state.group.all,
     loading: state.group.loading,
-    joining: state.group.joining
+    joining: state.group.joining,
+    notifications: state.notifications.groups
   }
 }
 
 export default connect(
   mapStateToProps,
-  { fetchGroups, joinGroup }
+  { fetchGroups, joinGroup, clearNotifications, addNotification, postReply }
 )(Groups)

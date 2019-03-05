@@ -69,6 +69,7 @@ class Detail extends Component {
           key={data.index}
           data={comment}
           color={this.props.post.color}
+          category={this.props.post.category}
           index={data.index}
           onVote={this.onVote}
         />

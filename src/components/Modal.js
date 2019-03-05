@@ -131,13 +131,13 @@ class PostModal extends Component {
 
   submit = () => {
     const color = getRandomColor()
-    const group = this.state.group
+    const group =
+      this.props.groupId == undefined ? this.state.group : this.props.groupId
     const content = this.state.content
 
-    console.log(this.state.formData)
     if (this.state.formData) {
       this.setState({ imageState: UPLOADING })
-      fetch("http://[2604:a880:800:a1::d66:5001]/user/image", {
+      fetch("http://167.99.170.233/user/image", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -153,7 +153,7 @@ class PostModal extends Component {
           this.props.onSubmit(content, color, group, responseJson.image)
         })
     } else {
-      this.props.onSubmit(this.state.content, color, this.state.group, null)
+      this.props.onSubmit(this.state.content, color, group, null)
     }
     this.state.group = ""
   }
@@ -189,7 +189,6 @@ class PostModal extends Component {
             color: "#FFF"
           }}
         />
-
         <Header
           outerContainerStyles={{
             padding: 0,
@@ -227,31 +226,35 @@ class PostModal extends Component {
             </TouchableOpacity>
           }
         />
-        <RNPickerSelect
-          placeholder={{
-            label: "Select a Group...",
-            value: null
-          }}
-          placeholderTextColor="rgba(0, 0, 0,0.5)"
-          items={this.props.subscriptions}
-          onValueChange={value => {
-            this.setState({
-              group: value
-            })
-          }}
-          onUpArrow={() => {
-            this.inputRefs.name.focus()
-          }}
-          onDownArrow={() => {
-            this.inputRefs.picker2.togglePicker()
-          }}
-          style={{ ...pickerSelectStyles }}
-          value={this.state.group}
-          ref={el => {
-            this.inputRefs.picker = el
-          }}
-          useNativeAndroidPickerStyle={false}
-        />
+        {this.props.groupId == undefined ? (
+          <RNPickerSelect
+            placeholder={{
+              label: "Select a Group...",
+              value: null
+            }}
+            placeholderTextColor="rgba(0, 0, 0,0.5)"
+            items={this.props.subscriptions}
+            onValueChange={value => {
+              this.setState({
+                group: value
+              })
+            }}
+            onUpArrow={() => {
+              this.inputRefs.name.focus()
+            }}
+            onDownArrow={() => {
+              this.inputRefs.picker2.togglePicker()
+            }}
+            style={{ ...pickerSelectStyles }}
+            value={this.state.group}
+            ref={el => {
+              this.inputRefs.picker = el
+            }}
+            useNativeAndroidPickerStyle={false}
+          />
+        ) : (
+          <View />
+        )}
         <View
           style={{
             flex: 1,

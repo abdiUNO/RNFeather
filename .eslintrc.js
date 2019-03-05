@@ -19,7 +19,7 @@ module.exports = {
   ],
   rules: {
     "prettier/prettier": "error",
-    "react/sort-comp": ["off"],
+    "react/sort-comp": [1],
     "react/prefer-stateless-function": ["off"],
     "react/jsx-filename-extension": [1, { extensions: [".js", ".jsx"] }],
     "no-undef": ["error"],

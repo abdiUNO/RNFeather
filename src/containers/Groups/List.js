@@ -1,26 +1,140 @@
 /* @flow weak */
 
-import React from "react"
-import { View, StyleSheet } from "react-native"
-import { List, ListItem } from "react-native-elements"
-const grey = "#f7f7f7"
+import React, { PureComponent } from "react"
+import {
+  View,
+  StyleSheet,
+  Platform,
+  Text,
+  TouchableOpacity
+} from "react-native"
+import { List, ListItem, Avatar, normalize, Badge } from "react-native-elements"
+import colors from "@common/colors"
 
-const IMAGES = {
-  image1: require("../../resources/group_1.png"),
-  image2: require("../../resources/group_2.png"),
-  image3: require("../../resources/group_3.png")
-}
+class GroupsList extends PureComponent {
+  renderAvatars = users => {
+    return (
+      <>
+        {users.map((user, index) => (
+          <Avatar
+            key={index}
+            containerStyle={{
+              left: -7 * index,
+              marginRight: users.length === 1 && index === 0 ? 15 : 0
+            }}
+            avatarStyle={{
+              width: 40,
+              height: 40,
+              borderColor: "#FFF",
+              borderWidth: 2,
+              borderRadius: 20
+            }}
+            rounded={true}
+            source={{
+              uri: `https://feather.sfo2.cdn.digitaloceanspaces.com/${
+                user.image
+              }`
+            }}
+          />
+        ))}
+      </>
+    )
+  }
 
-const getImage = num => {
-  return IMAGES["image" + num]
-}
+  renderTitle = l => {
+    const props = this.props
 
-const COLORS = {
-  transparent: "transparent",
-  white: "#fff",
-  black: "#000",
-  subGrey: "#dee1e3",
-  grey: "#949294"
+    return (
+      <View style={styles.titleSubtitleContainer}>
+        <View>
+          <Text
+            style={{
+              ...styles.title,
+              fontWeight:
+                props.notifications[l.id] &&
+                props.notifications[l.id].unread_messages > 0
+                  ? "bold"
+                  : "normal",
+              color:
+                props.notifications[l.id] &&
+                props.notifications[l.id].unread_messages > 0
+                  ? "#000"
+                  : colors.grey1
+            }}
+          >
+            {l.users.map((user, index) => {
+              if (index === l.users.length - 1) return user.username + "..."
+              else return user.username + ", "
+            })}
+          </Text>
+        </View>
+        <View style={{ paddingTop: 2.5 }}>
+          <Text
+            style={{
+              ...styles.subtitle,
+              fontWeight:
+                props.notifications[l.id] &&
+                props.notifications[l.id].unread_messages > 0
+                  ? "700"
+                  : "600",
+              color:
+                props.notifications[l.id] &&
+                props.notifications[l.id].unread_messages > 0
+                  ? "#000"
+                  : colors.grey3
+            }}
+          >
+            {props.notifications[l.id] && props.notifications[l.id].last_message
+              ? props.notifications[l.id].last_message.substr(0, 25)
+              : ""}
+            ...
+          </Text>
+        </View>
+      </View>
+    )
+  }
+
+  _onItemPress = item => e => {
+    return this.props.onPress(item)
+  }
+
+  render() {
+    const props = this.props
+
+    const subtitle = "Hey fellas, how is the semester going for you guys"
+
+    return (
+      <List containerStyle={styles.list}>
+        {props.groups.map((l, index) => {
+          return (
+            <View style={styles.listItem} key={index}>
+              <TouchableOpacity onPress={this._onItemPress(l)}>
+                <View style={styles.container}>
+                  <View style={styles.wrapper}>
+                    {this.renderAvatars(l.users)}
+                    {this.renderTitle(l)}
+                    {props.notifications[l.id] &&
+                      props.notifications[l.id].unread_messages > 0 && (
+                        <Badge
+                          wrapperStyle={{ paddingLeft: 6, paddingRight: 6 }}
+                          containerStyle={{
+                            backgroundColor: "#f39c12",
+                            paddingLeft: 9,
+                            paddingRight: 9,
+                            paddingTop: 2,
+                            paddingBottom: 2
+                          }}
+                        />
+                      )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )
+        })}
+      </List>
+    )
+  }
 }
 
 const styles = StyleSheet.create({
@@ -30,59 +144,49 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     padding: 12.5,
     borderBottomWidth: 0,
-    backgroundColor: COLORS.transparent
+    backgroundColor: colors.transparent
   },
   listItem: {
-    paddingTop: 30,
-    paddingBottom: 30,
-    paddingLeft: 10,
-    paddingRight: 10,
     marginTop: 12.5,
     marginBottom: 12.5,
-    borderColor: COLORS.subGrey,
+    borderColor: colors.grey5,
     borderWidth: 1,
     borderRadius: 2.5,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.subGrey,
-    backgroundColor: COLORS.white,
-    shadowColor: COLORS.grey,
+    backgroundColor: colors.white,
+    shadowColor: colors.grey0,
     shadowOffset: {
       width: 2.5,
       height: 2.5
     },
     shadowOpacity: 0.5,
     shadowRadius: 5
+  },
+  container: {
+    paddingTop: 30,
+    paddingBottom: 30,
+    paddingLeft: 10,
+    paddingRight: 10,
+    backgroundColor: "transparent"
+  },
+  wrapper: {
+    flexDirection: "row",
+    marginLeft: 10,
+    alignItems: "center"
+  },
+  title: {
+    fontSize: normalize(14),
+    color: colors.grey1
+  },
+  subtitle: {
+    color: colors.grey3,
+    fontSize: normalize(12),
+    marginTop: 1
+  },
+  titleSubtitleContainer: {
+    justifyContent: "center",
+    flex: 1
   }
 })
-
-const list = [
-  {
-    name: "Amy Farha",
-    avatar_url: getImage(1),
-    subtitle: "Sed animi dicta non esse hic necessitatibus qui possimus. ",
-    id: "3Qa9W5kUBBLK6i7Nwe0h"
-  },
-  {
-    name: "Chris Jackson",
-    avatar_url: getImage(2),
-    subtitle: "In nam molestias corporis",
-    id: "3Qa9W5kUBBLK6i7Nwe0h"
-  }
-]
-
-const GroupsList = props => (
-  <List containerStyle={styles.list}>
-    {props.groups.map((l, index) => (
-      <ListItem
-        onPress={() => props.onPress(l)}
-        containerStyle={styles.listItem}
-        roundAvatar
-        avatar={getImage(1)}
-        key={index}
-        title={`Group #${index + 1}`}
-      />
-    ))}
-  </List>
-)
 
 export default GroupsList

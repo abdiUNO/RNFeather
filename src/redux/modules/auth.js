@@ -2,7 +2,7 @@ import { RSAA } from "redux-api-middleware"
 import { log, url } from "@src/utils"
 import { fetchPosts } from "./post"
 
-import { Alert } from "react-native"
+import { Alert, AsyncStorage } from "react-native"
 
 console.log(url)
 // Actions
@@ -85,80 +85,94 @@ export default function reducer(state = {}, action = {}) {
   }
 }
 
-export const login = (email, password) => {
-  return {
-    [RSAA]: {
-      endpoint: `${url}/user/login`,
-      method: "POST",
-      types: [
-        API_REQUEST,
-        {
-          type: LOGIN_IN,
-          meta: {
-            routeName: "WaitScreen",
-            params: {}
-          }
-        },
-        {
-          type: REQUEST_FAILURE,
-          payload: async (action, state, res) => {
-            const errors = await res.json()
-            Alert.alert(errors.message)
-            return errors
-          }
+const loginRequest = (email, password, fcmToken) => ({
+  [RSAA]: {
+    endpoint: `${url}/user/login`,
+    method: "POST",
+    types: [
+      API_REQUEST,
+      {
+        type: LOGIN_IN,
+        meta: {
+          routeName: "WaitScreen",
+          params: {}
         }
-      ],
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        email,
-        password
-      })
-    }
+      {
+        type: REQUEST_FAILURE,
+        payload: async (action, state, res) => {
+          const errors = await res.json()
+          Alert.alert(errors.message)
+          return errors
+        }
+      }
+    ],
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email,
+      password,
+      fcmToken
+    })
+  }
+})
+
+export const login = (email, password) => {
+  //IN order to use await your callback must be asynchronous using async keyword.
+  return async dispatch => {
+    let fcmToken = await AsyncStorage.getItem("fcmToken")
+    dispatch(loginRequest(email, password, fcmToken))
   }
 }
 
-export const signup = (username, email, password) => {
-  return {
-    [RSAA]: {
-      endpoint: `${url}/user`,
-      method: "POST",
-      types: [
-        API_REQUEST,
-        {
-          type: SIGN_UP,
-          payload: async (action, state, res) => {
-            const pay = await res.json()
+const signupRequest = (username, email, password, fcmToken) => ({
+  [RSAA]: {
+    endpoint: `${url}/user`,
+    method: "POST",
+    types: [
+      API_REQUEST,
+      {
+        type: SIGN_UP,
+        payload: async (action, state, res) => {
+          const pay = await res.json()
 
-            log("GROUPS", pay)
+          log("GROUPS", pay)
 
-            return pay
-          },
-          meta: {
-            routeName: "ImageUpload",
-            params: {}
-          }
+          return pay
         },
-        {
-          type: REQUEST_FAILURE,
-          payload: async (action, state, res) => {
-            const error = await res.json()
-            log("ERROR", error)
-          }
+        meta: {
+          routeName: "ImageUpload",
+          params: {}
         }
-      ],
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        username,
-        email,
-        password
-      })
-    }
+      {
+        type: REQUEST_FAILURE,
+        payload: async (action, state, res) => {
+          const error = await res.json()
+          log("ERROR", error)
+        }
+      }
+    ],
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      email,
+      password,
+      fcmToken
+    })
+  }
+})
+
+export const signup = (username, email, password) => {
+  //IN order to use await your callback must be asynchronous using async keyword.
+  return async dispatch => {
+    let fcmToken = await AsyncStorage.getItem("fcmToken")
+    dispatch(signupRequest(username, email, password, fcmToken))
   }
 }
 

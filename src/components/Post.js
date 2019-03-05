@@ -15,7 +15,54 @@ import Lightbox from "react-native-lightbox"
 const WINDOW_WIDTH = Dimensions.get("window").width
 const BASE_PADDING = 10
 
+const seedrandom = require("seedrandom")
+
+function animalAvatar(userId, postId) {
+  seedrandom(`${postId}&${userId}`, { global: true })
+
+  const randomNum = (_min, _max) => {
+    const min = Math.ceil(_min)
+    const max = Math.floor(_max)
+
+    return Math.floor(Math.random() * (max - min)) + min
+  }
+
+  const animals = [
+    "cat",
+    "dragon",
+    "crow",
+    "paw",
+    "dog",
+    "dove",
+    "feather",
+    "hippo",
+    "horse",
+    "otter",
+    "spider"
+  ]
+  const backgrounds = [
+    "black",
+    "orange",
+    "green",
+    "purple",
+    "blue",
+    "red",
+    "turq",
+    "dark",
+    "yellow"
+  ]
+
+  const animal = animals[randomNum(0, animals.length)]
+  const background = backgrounds[randomNum(0, backgrounds.length)]
+
+  return `https://feather.sfo2.digitaloceanspaces.com/avatars/${animal}/${background}.png`
+}
+
 const CATEGORIES = {
+  "UNO Crushes": {
+    name: "heart",
+    type: "font-awesome"
+  },
   Music: {
     name: "headphones",
     type: "feather"
@@ -29,8 +76,8 @@ const CATEGORIES = {
     type: "feather"
   },
   Fitness: {
-    name: "heart",
-    type: "font-awesome"
+    name: "fitness-center",
+    type: "material"
   },
   Sports: {
     name: "futbol-o",
@@ -82,7 +129,8 @@ export default class Post extends Component {
   shouldComponentUpdate(nextProps) {
     return (
       this.props.data.votesCount !== nextProps.data.votesCount ||
-      this.props.data.text !== nextProps.data.text
+      this.props.data.text !== nextProps.data.text ||
+      this.props.data.commentsCount !== nextProps.data.commentsCount
     )
   }
 
@@ -154,11 +202,13 @@ export default class Post extends Component {
           subtitleStyle={{ marginLeft: 25, color: "#fff" }}
           roundAvatar
           title={
-            data.category === "Anonymous" ? "----------" : data.user.username
+            data.category === "Anonymous" || data.category === "UNO Crushes"
+              ? "----------"
+              : data.user.username
           }
           avatar={
-            data.category === "Anonymous"
-              ? require("../containers/Feed/anon_grey.jpg")
+            data.category === "Anonymous" || data.category === "UNO Crushes"
+              ? animalAvatar(data.user.id, data.id)
               : avatar
           }
           subtitle={data.category}
@@ -174,8 +224,7 @@ export default class Post extends Component {
         <View style={{ paddingHorizontal: 5, paddingVertical: 15 }}>
           <Text style={{ fontSize: 15, color: "#fff" }}>{data.text}</Text>
         </View>
-
-        {(data.links != null) & (data.links.length > 0) ? (
+        {data.links != null && data.links.length > 0 ? (
           <Tile
             onPress={() => Linking.openURL(data.links[0].url)}
             imageSrc={{

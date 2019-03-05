@@ -108,8 +108,8 @@ android {
         applicationId "com.rnfeather"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "1.5"
+        versionCode 8
+        versionName "1.6"
         ndk {
             abiFilters "armeabi-v7a", "x86"
         }
@@ -145,12 +145,20 @@ android {
 }
 
 dependencies {
+   compile(project(':react-native-firebase')) {
+       transitive = false
+   }
     compile project(':react-native-vector-icons')
     compile project(':react-native-image-resizer')
     compile project(':react-native-image-picker')
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation 'com.facebook.react:react-native:+'
+
+    //Add these lines
+    implementation "com.google.android.gms:play-services-base:15.0.1"
+    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation "com.google.firebase:firebase-messaging:17.3.4"
     // From node_modules
 }
 
@@ -160,3 +168,5 @@ task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.compile
     into 'libs'
 }
+
+apply plugin: 'com.google.gms.google-services'

@@ -11,7 +11,7 @@ class AuthLoadingScreen extends React.Component {
 
   async _bootstrapAsync() {
     if (!this.props.user) {
-      this.props.navigation.navigate("Login")
+      this.props.navigation.navigate("Auth")
     } else {
       this.props.navigation.navigate("App")
     }

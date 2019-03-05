@@ -26,6 +26,7 @@ const POST_VOTE = "auth/POST_VOTE_SUCCESS"
 const POST_VOTE_FAILURE = "auth/POST_VOTE_FAILURE"
 
 const FETCH_GROUP_POSTS = "POSTS/FETCH_GROUP_POSTS"
+const FETCH_REQUEST = "POSTS/FETCH_REQUEST"
 
 function getRandomColor() {
   const color = [
@@ -81,15 +82,24 @@ const postReducer = (state = [], action) => {
 // Reducer
 export default function reducer(
   state = {
+    fetching: false,
     loading: false,
     group: {
       byId: null,
       allIds: null
-    }
+    },
+    allIds: [],
+    byId: {}
   },
   action = {}
 ) {
   switch (action.type) {
+    case FETCH_REQUEST:
+      return {
+        ...state,
+        fetching: true,
+        group: {}
+      }
     case API_REQUEST:
       return {
         ...state,
@@ -115,6 +125,7 @@ export default function reducer(
       return {
         ...state,
         loading: false,
+        fetching: false,
         byId: action.payload.entities.posts,
         allIds: action.payload.result
       }
@@ -162,7 +173,7 @@ export const fetchPosts = () => (dispatch, getState) => {
       endpoint: `${url}/post`,
       method: "GET",
       types: [
-        API_REQUEST,
+        FETCH_REQUEST,
         {
           type: FETCH_POSTS,
           payload: async (action, state, res) =>
@@ -182,11 +193,11 @@ export const fetchPosts = () => (dispatch, getState) => {
   })
 }
 
-export const fetchPostsBy = categoryId => (dispatch, getState) => {
+export const fetchPostsBy = item => (dispatch, getState) => {
   const user = getState().auth.user
   dispatch({
     [RSAA]: {
-      endpoint: `${url}/post/category/${categoryId}`,
+      endpoint: `${url}/post/category/${item.title}`,
       method: "GET",
       types: [
         API_REQUEST,
@@ -199,7 +210,7 @@ export const fetchPostsBy = categoryId => (dispatch, getState) => {
           },
           meta: {
             routeName: "GroupFeed",
-            params: {}
+            params: { group: item }
           }
         },
         {
@@ -258,12 +269,12 @@ export const createPost = (text, color, category, image) => (
   })
 }
 
-export const getPost = post => (dispatch, getState) => {
+export const getPost = postId => (dispatch, getState) => {
   const user = getState().auth.user
 
   dispatch({
     [RSAA]: {
-      endpoint: `${url}/post/${post.id}/comments`,
+      endpoint: `${url}/post/${postId}/comments`,
       method: "GET",
       types: [
         GET_POST_REQUEST,
@@ -273,14 +284,11 @@ export const getPost = post => (dispatch, getState) => {
             const comments = await res.json()
             return {
               ...normalize(comments, commentsListSchema),
-              id: post.id
+              id: postId
             }
           },
           meta: {
-            routeName: "Detail",
-            params: {
-              post: post
-            }
+            routeName: "Detail"
           }
         },
         {

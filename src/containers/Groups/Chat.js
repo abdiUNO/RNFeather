@@ -4,11 +4,12 @@ import { GiftedChat, Bubble } from "react-native-gifted-chat"
 import { fetchGroups } from "@redux/modules/group"
 import { Icon } from "react-native-elements"
 import Fire from "@services/Fire"
-import GroupsList from "./List"
+import firebase from "react-native-firebase"
 
 const QUIZ_STARTED = 0
 const START_QUIZ = 1
 const NO_QUIZ = 2
+import Reactotron from "reactotron-react-native"
 
 function parseHtmlEntities(text) {
   var entities = [
@@ -66,6 +67,18 @@ class Chat extends Component<{}> {
       index: 0,
       correct: 0
     }
+  }
+
+  componentDidMount() {
+    const { params } = this.props.navigation.state
+    firebase.messaging().unsubscribeFromTopic(params.group.id)
+    this.listenForMessages(params.group.id)
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false
+    const { params } = this.props.navigation.state
+    firebase.messaging().subscribeToTopic(params.group.id)
   }
 
   get user() {
@@ -234,6 +247,13 @@ class Chat extends Component<{}> {
   }
 
   render() {
+    Reactotron.display({
+      name: "ORANGE",
+      preview: "Who?",
+      value: "Orange you glad you don't know me in real life?",
+      important: true
+    })
+
     return (
       <GiftedChat
         messages={this.state.messages}
@@ -291,15 +311,6 @@ class Chat extends Component<{}> {
         ]}
       />
     )
-  }
-
-  componentDidMount() {
-    const { params } = this.props.navigation.state
-    this.listenForMessages(params.group.id)
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false
   }
 }
 

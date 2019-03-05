@@ -8,7 +8,7 @@ import {
   Button,
   Icon
 } from "react-native-elements"
-import connect from "react-redux/es/connect/connect"
+import { connect } from "react-redux"
 import { login } from "@redux/modules/auth"
 
 class Login extends Component {

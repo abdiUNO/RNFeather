@@ -22,6 +22,7 @@ import GroupList from "@containers/Feed/GroupList"
 import SignUp from "@containers/Auth/SignUp"
 import ImageUpload from "@containers/Auth/ImageUpload"
 import GroupFeed from "@containers/Feed/GroupFeed"
+import Notifications from "@containers/Settings/Notifications"
 
 const TabNavigator = createBottomTabNavigator(
   {
@@ -54,6 +55,7 @@ TabNavigator.navigationOptions = ({ navigation }) => {
   if (routeName === "Cliques")
     return {
       headerTitle,
+      animationEnabled: true,
       headerRight: (
         <TouchableOpacity
           onPress={() => {
@@ -71,6 +73,7 @@ TabNavigator.navigationOptions = ({ navigation }) => {
   else if (routeName === "Home") {
     return {
       headerTitle,
+      animationEnabled: true,
       headerRight: (
         <TouchableOpacity
           onPress={() => {
@@ -86,7 +89,8 @@ TabNavigator.navigationOptions = ({ navigation }) => {
     }
   } else
     return {
-      headerTitle
+      headerTitle,
+      animationEnabled: true
     }
 }
 
@@ -104,10 +108,10 @@ const options = {
         backgroundColor: "#FF8900",
         borderBottomColor: "#FF8900",
         color: "#fff"
-      }
+      },
+      animationEnabled: true
     }
-  },
-  animationEnabled: true
+  }
 }
 
 const Auth = createStackNavigator(
@@ -127,7 +131,8 @@ const App = createStackNavigator(
     Detail,
     GroupList,
     GroupSettings,
-    GroupFeed
+    GroupFeed,
+    Notifications
   },
   options
 )

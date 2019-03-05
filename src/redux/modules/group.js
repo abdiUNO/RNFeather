@@ -1,5 +1,7 @@
 import { RSAA, getJSON } from "redux-api-middleware"
 import { log, url } from "@src/utils"
+import firebase from "react-native-firebase"
+
 const CHANGE_TYPE = {
   added: "added",
   modified: "modified",
@@ -75,7 +77,17 @@ export const fetchGroups = () => (dispatch, getState) => {
         API_REQUEST,
         {
           type: FETCH_GROUPS,
-          payload: async (action, state, res) => res.json()
+          payload: async (action, state, res) => {
+            const groups = await res.json()
+
+            //alert(groups.length)
+            groups.map(group => {
+              firebase.messaging().subscribeToTopic(group.id)
+              //alert(group.id)
+            })
+
+            return groups
+          }
         },
         {
           type: REQUEST_FAILURE,

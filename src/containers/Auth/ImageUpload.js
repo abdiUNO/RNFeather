@@ -11,7 +11,7 @@ import {
 import { Button, Icon } from "react-native-elements"
 import ImageResizer from "react-native-image-resizer"
 import ImagePicker from "react-native-image-picker"
-import connect from "react-redux/es/connect/connect"
+import { connect } from "react-redux"
 import { uploadImage } from "@redux/modules/auth"
 import Spinner from "react-native-loading-spinner-overlay"
 

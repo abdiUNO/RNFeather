@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "398499268676",
+    "firebase_url": "https://feather-test.firebaseio.com",
+    "project_id": "feather-test",
+    "storage_bucket": "feather-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398499268676:android:3d540ba26f7a461e",
+        "android_client_info": {
+          "package_name": "com.rnfeather"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "398499268676-da5f2tsv2b73kc4vtiql98loefehrlma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcx1dlFKHDgpG4_BAWqL4k6rlMkUG1i0E"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

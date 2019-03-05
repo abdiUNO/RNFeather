@@ -8,19 +8,21 @@ import thunk from "redux-thunk"
 import group from "./modules/group"
 import auth from "./modules/auth"
 import post from "./modules/post"
+import notifications from "./modules/notifications"
 
 import navMiddleware from "./navMiddleware"
 
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth"]
+  whitelist: ["auth", "notifications", "post"]
 }
 
 const rootReducer = combineReducers({
   group,
   auth,
-  post
+  post,
+  notifications
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
